@@ -44,6 +44,7 @@
 #include "tools/mtmd/llava.h"
 #include "common/common.h"
 
+#include "experimental/emphasis.h"
 //const
 const int extra_context_handle_fragmentation = 120;
 const int LLAVA_TOKEN_IDENTIFIER_A = -998; //alternate between both, changing when image changes
@@ -3059,9 +3060,18 @@ generation_outputs gpttype_generate(const generation_inputs inputs)
 
     bool llava_images_changed = false;
 
+    std::string empcats_config;
+
     for(int x=0;x<inputs.stop_sequence_len;++x)
     {
         std::string stopper = inputs.stop_sequence[x];
+        // injected emphasisfsm config
+        if (stopper.compare(0, 11, "emphasisfsm") == 0)
+        {
+            empcats_config = std::move(stopper);
+            continue;
+        }
+
         if(stopper!="")
         {
             stop_sequence.push_back(stopper);
@@ -3671,6 +3681,10 @@ generation_outputs gpttype_generate(const generation_inputs inputs)
         printf("%s\n\n", RemoveBell(outstr).c_str());
     }
 
+    if (llama_ctx_v4) {
+        empcats_init(llama_ctx_v4, embd_inp, empcats_config);
+    }
+
     while (remaining_tokens > 0 && !early_abort)
     {
         gpt_vocab::id id = 0;
@@ -3890,21 +3904,21 @@ generation_outputs gpttype_generate(const generation_inputs inputs)
                 }
 
                 //handle token bans
-                if (!inputs.allow_eos_token && !inputs.bypass_eos_token)
-                {
-                    // set the logit of the eos token to very low to avoid sampling it
+            if (!inputs.allow_eos_token && !inputs.bypass_eos_token)
+            {
+                // set the logit of the eos token to very low to avoid sampling it
                     for(int i=0;i<eog_tokens.size();++i)
-                    {
-                         logitsPtr[eog_tokens[i]] = lowestLogit;
-                    }
-                }
-                if(btsize>0)
                 {
-                    for(int t=0;t<btsize;++t)
-                    {
-                        logitsPtr[banned_token_ids[t]]=lowestLogit;
-                    }
+                         logitsPtr[eog_tokens[i]] = lowestLogit;
                 }
+            }
+            if(btsize>0)
+            {
+                for(int t=0;t<btsize;++t)
+                {
+                    logitsPtr[banned_token_ids[t]]=lowestLogit;
+                }
+            }
 
                 //handle temp bans from antislop
                 if (antislop_banned_token_ids.find(n_past) != antislop_banned_token_ids.end()) {
@@ -3915,12 +3929,21 @@ generation_outputs gpttype_generate(const generation_inputs inputs)
                     }
                 }
 
+                if (llama_ctx_v4) {
+                    empcats_step_pre(llama_ctx_v4, logitsPtr);
+                }
+
                 id = SampleLogits(logitsPtr, nctx, n_vocab, last_n_size, repeat_penalty, kcpp_data->rep_pen_slope, presence_penalty,
                 top_k, top_a, top_p, min_p, typical_p, tfs_z, nsigma, temp, rng,
                 kcpp_data->mirostat, kcpp_data->mirostat_tau, kcpp_data->mirostat_eta,
                 kcpp_data->dry_multiplier, kcpp_data->dry_base,
                 kcpp_data->dry_allowed_length, kcpp_data->dry_penalty_last_n, kcpp_data->xtc_threshold, kcpp_data->xtc_probability,
-                sampler_order, grammar, dynatemp_range, dynatemp_exponent, smoothing_factor);
+            sampler_order, grammar, dynatemp_range, dynatemp_exponent, smoothing_factor);
+
+                if (llama_ctx_v4) {
+                    empcats_step_post(llama_ctx_v4, id );
+                }
+
 
                 if(draft_used)
                 {

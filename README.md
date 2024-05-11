@@ -1,3 +1,7 @@
+# koboldcpp-experimental
+
+KoboldCpp-experimental is a sligthly extended KoboldCpp with [custom](experimental/README.md) functionality.
+
 # koboldcpp
 
 KoboldCpp is an easy-to-use AI text-generation software for GGML and GGUF models, inspired by the original **KoboldAI**. It's a single self-contained distributable that builds off **llama.cpp** and adds many additional powerful features.
