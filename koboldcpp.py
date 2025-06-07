@@ -4052,7 +4052,7 @@ def show_gui():
     ctk.set_appearance_mode("dark")
     root = ctk.CTk()
     root.geometry(str(windowwidth) + "x" + str(windowheight))
-    root.title(f"KoboldCpp v{KcppVersion}")
+    root.title(f"KoboldCpp v{KcppVersion}-emphasis1")
 
     gtooltip_box = None
     gtooltip_label = None
@@ -5451,18 +5451,22 @@ def show_gui():
     def display_help():
         LaunchWebbrowser("https://github.com/LostRuins/koboldcpp/wiki","Cannot launch help in browser.")
 
+    def display_ex():
+        LaunchWebbrowser("https://github.com/Yoshqu/koboldcpp-experimental/blob/emphasis/experimental/README.md","Cannot launch help in browser.")
+
     def display_help_models():
         LaunchWebbrowser("https://github.com/LostRuins/koboldcpp/wiki#what-models-does-koboldcpp-support-what-architectures-are-supported","Cannot launch help in browser.")
 
     def display_updates():
         LaunchWebbrowser("https://github.com/LostRuins/koboldcpp/releases/latest","Cannot launch updates in browser.")
 
-    ctk.CTkButton(tabs , text = "Launch", fg_color="#2f8d3c", hover_color="#2faa3c", command = guilaunch, width=80, height = 35 ).grid(row=1,column=1, stick="se", padx= 25, pady=5)
+    ctk.CTkButton(tabs , text = "Launch", fg_color="#2f8d3c", hover_color="#2faa3c", command = guilaunch, width=80, height = 35 ).grid(row=1,column=1, stick="sw", padx= 390, pady=5)
 
     ctk.CTkButton(tabs , text = "Update", fg_color="#9900cc", hover_color="#aa11dd", command = display_updates, width=90, height = 35 ).grid(row=1,column=0, stick="sw", padx= 5, pady=5)
     ctk.CTkButton(tabs , text = "Save Config", fg_color="#084a66", hover_color="#085a88", command = save_config_gui, width=60, height = 35 ).grid(row=1,column=1, stick="sw", padx= 5, pady=5)
     ctk.CTkButton(tabs , text = "Load Config", fg_color="#084a66", hover_color="#085a88", command = load_config_gui, width=60, height = 35 ).grid(row=1,column=1, stick="sw", padx= 92, pady=5)
     ctk.CTkButton(tabs , text = "Help (Find Models)", fg_color="#992222", hover_color="#bb3333", command = display_help, width=100, height = 35 ).grid(row=1,column=1, stick="sw", padx= 180, pady=5)
+    ctk.CTkButton(tabs , text = "Emph", fg_color="#992222", hover_color="#bb3333", command = display_ex, width=40, height = 35 ).grid(row=1,column=1, stick="sw", padx= 305, pady=5)
 
     # start a thread that tries to get actual gpu names and layer counts
     gpuinfo_thread = threading.Thread(target=auto_set_backend_gui)
